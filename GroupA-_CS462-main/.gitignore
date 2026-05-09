@@ -2,6 +2,6 @@
 __pycache__/
 *.pyc
 model/*.joblib
-dataset/**/*.png
-dataset/**/*.jpg
-dataset/**/*.jpeg
+# dataset/**/*.png
+# dataset/**/*.jpg
+# dataset/**/*.jpeg
