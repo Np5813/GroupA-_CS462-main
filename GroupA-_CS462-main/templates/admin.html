@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+<section class="panel narrow">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Admin Page</p>
+      <h1>อัปโหลดโมเดลใหม่</h1>
+    </div>
+  </div>
+
+  <div class="upload-box">
+    <p>Current model: <strong>{{ model_name if has_model else "ยังไม่มีโมเดล" }}</strong></p>
+    <input id="modelFile" type="file" accept=".joblib">
+    <button class="primary" type="button" id="uploadButton">Upload Model</button>
+    <div class="status-line" id="uploadStatus">Ready</div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById("uploadButton").addEventListener("click", async () => {
+    const input = document.getElementById("modelFile");
+    const status = document.getElementById("uploadStatus");
+    if (!input.files.length) {
+      status.textContent = "Please select model.joblib";
+      return;
+    }
+
+    const form = new FormData();
+    form.append("model", input.files[0]);
+    status.textContent = "Uploading...";
+    const response = await fetch("/upload-model", { method: "POST", body: form });
+    const result = await response.json();
+    status.textContent = result.ok ? `Uploaded ${result.model}` : (result.error || "Upload failed");
+  });
+</script>
+{% endblock %}

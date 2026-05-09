@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Thai Handwriting Classifier{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">Thai Handwriting ML</a>
+    <nav>
+      <a href="/">Predict</a>
+      <a href="/collect">Collect</a>
+      <a href="/admin">Admin</a>
+    </nav>
+  </header>
+  <main class="shell">
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{{ url_for('static', filename='canvas.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

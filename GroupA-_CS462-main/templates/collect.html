@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Collect Dataset{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Dataset Collector</p>
+      <h1>เก็บรูปวาดเลขไทย ๒๖-๓๐</h1>
+    </div>
+    <div class="status-pill" id="saveStatus">Ready</div>
+  </div>
+
+  <div class="workspace">
+    <div class="canvas-zone">
+      <canvas id="drawCanvas" width="320" height="320"></canvas>
+      <div class="toolbar">
+        <button class="secondary" type="button" data-action="clear">Clear</button>
+        <button class="primary" type="button" id="saveSample">Save Sample</button>
+      </div>
+    </div>
+
+    <aside class="side-panel">
+      <label for="labelSelect">Label</label>
+      <select id="labelSelect">
+        {% for class_id, thai_label in labels.items() %}
+          <option value="{{ class_id }}">{{ thai_label }}</option>
+        {% endfor %}
+      </select>
+
+      <div class="info-box">
+        <strong>วิธีเก็บข้อมูล</strong>
+        <p>เลือก label ให้ตรงกับเลขที่กำลังวาด แล้วกด Save Sample เพื่อบันทึกรูปเข้า dataset ของ class นั้น</p>
+      </div>
+
+      <div class="counter-list">
+        {% for class_id, thai_label in labels.items() %}
+          <div><span>{{ thai_label }}</span><span id="count-{{ class_id }}">-</span></div>
+        {% endfor %}
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const pad = createDrawingCanvas("drawCanvas");
+  document.querySelector('[data-action="clear"]').addEventListener("click", () => pad.clear());
+
+  document.getElementById("saveSample").addEventListener("click", async () => {
+    const label = document.getElementById("labelSelect").value;
+    const status = document.getElementById("saveStatus");
+    status.textContent = "Saving...";
+
+    const response = await fetch("/save-sample", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ label, image: pad.toDataURL() })
+    });
+    const result = await response.json();
+
+    if (!result.ok) {
+      status.textContent = result.error || "Save failed";
+      return;
+    }
+
+    document.getElementById(`count-${label}`).textContent = result.total;
+    status.textContent = `Saved ${result.label}`;
+    pad.clear();
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Predict Thai Number{% endblock %}
+
+{% block content %}
+<section class="panel">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">User Page</p>
+      <h1>เขียนเลขไทย แล้วให้โมเดลทำนาย</h1>
+    </div>
+    <div class="class-strip">
+      {% for class_id, thai_label in labels.items() %}
+        <span>{{ thai_label }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="workspace">
+    <div class="canvas-zone">
+      <canvas id="drawCanvas" width="320" height="320"></canvas>
+      <div class="toolbar">
+        <button class="primary" type="button" id="predictButton">Predict</button>
+        <button class="secondary" type="button" data-action="clear">Clear</button>
+      </div>
+    </div>
+
+    <aside class="side-panel result-panel">
+      <p class="eyebrow">Prediction</p>
+      <div class="prediction" id="prediction">-</div>
+      <div id="confidenceText">Confidence: -</div>
+      <div class="bar"><div id="confidenceFill"></div></div>
+      <div class="probabilities" id="probabilities"></div>
+    </aside>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const pad = createDrawingCanvas("drawCanvas");
+  const prediction = document.getElementById("prediction");
+  const confidenceText = document.getElementById("confidenceText");
+  const confidenceFill = document.getElementById("confidenceFill");
+  const probabilities = document.getElementById("probabilities");
+
+  function resetResult() {
+    prediction.textContent = "-";
+    confidenceText.textContent = "Confidence: -";
+    confidenceFill.style.width = "0%";
+    probabilities.innerHTML = "";
+  }
+
+  document.querySelector('[data-action="clear"]').addEventListener("click", () => {
+    pad.clear();
+    resetResult();
+  });
+
+  document.getElementById("predictButton").addEventListener("click", async () => {
+    prediction.textContent = "...";
+    const response = await fetch("/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: pad.toDataURL() })
+    });
+    const result = await response.json();
+
+    if (!result.ok) {
+      prediction.textContent = "No model";
+      confidenceText.textContent = result.error || "Prediction failed";
+      confidenceFill.style.width = "0%";
+      return;
+    }
+
+    prediction.textContent = result.prediction;
+    if (result.confidence === null) {
+      confidenceText.textContent = "Confidence: -";
+      confidenceFill.style.width = "0%";
+    } else {
+      const percent = result.confidence * 100;
+      confidenceText.textContent = `Confidence: ${percent.toFixed(1)}%`;
+      confidenceFill.style.width = `${percent}%`;
+    }
+
+    probabilities.innerHTML = "";
+    if (result.probabilities) {
+      for (const item of result.probabilities) {
+        const row = document.createElement("div");
+        row.textContent = `${item.label}: ${(item.confidence * 100).toFixed(1)}%`;
+        probabilities.appendChild(row);
+      }
+    }
+  });
+</script>
+{% endblock %}
