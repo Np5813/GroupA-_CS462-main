@@ -122,7 +122,7 @@ def main():
     # --- บันทึกไฟล์โมเดลใหม่แยกตามเวลา ---
     MODEL_DIR.mkdir(exist_ok=True)
     
-    # สร้างชื่อไฟล์ใหม่ เช่น model_rf_20260512_1530.joblib
+    # สร้างชื่อไฟล์ใหม่ 
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     new_model_filename = f"model_rf_{timestamp}.joblib"
     save_path = MODEL_DIR / new_model_filename
